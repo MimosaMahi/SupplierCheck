@@ -45,7 +45,7 @@ The late-delivery penalty must be at least 0.5% of order value per week of delay
 
 | File | What it is |
 |---|---|
-| `Check_supplier_documents_FIXED.json` | The n8n workflow. Import this file |
+| `SupplierCheck Workflow File.json` | The n8n workflow. Import this file |
 | `supplier-vs-company.js` | The rule engine code (already inside the workflow) |
 | `extractor-schema.json` | The fields and prompt given to the AI extractor (already inside the workflow) |
 | `test-supplier-rules.js` | Tests the rule engine on the 10 sample packs |
