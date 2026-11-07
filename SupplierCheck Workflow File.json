@@ -1,0 +1,374 @@
+{
+  "name": "Check supplier documents by n8n",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "supplier_file",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        16
+      ],
+      "id": "40dbcedf-1fcc-48ff-9d1e-cee1dbd4b8e8",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }}",
+        "schemaType": "manual",
+        "inputSchema": "{\n    \"type\": \"object\",\n    \"properties\": {\n      \"quotation_no\": {\n        \"type\": [\n          \"string\",\n          \"null\"\n        ]\n      },\n      \"quotation_date\": {\n        \"type\": [\n          \"string\",\n          \"null\"\n        ],\n        \"description\": \"YYYY-MM-DD\"\n      },\n      \"supplier_name\": {\n        \"type\": [\n          \"string\",\n          \"null\"\n        ]\n      },\n      \"reference_pr\": {\n        \"type\": [\n          \"string\",\n          \"null\"\n        ],\n        \"description\": \"Purchase request number the quote refers to\"\n      },\n      \"items\": {\n        \"type\": \"array\",\n        \"items\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"item_code\": {\n              \"type\": [\n                \"string\",\n                \"null\"\n              ]\n            },\n            \"description\": {\n              \"type\": [\n                \"string\",\n                \"null\"\n              ]\n            },\n            \"quantity\": {\n              \"type\": [\n                \"number\",\n                \"null\"\n              ]\n            },\n            \"unit\": {\n              \"type\": [\n                \"string\",\n                \"null\"\n              ]\n            },\n            \"unit_price\": {\n              \"type\": [\n                \"number\",\n                \"null\"\n              ]\n            },\n            \"amount\": {\n              \"type\": [\n                \"number\",\n                \"null\"\n              ]\n            }\n          }\n        }\n      },\n      \"subtotal\": {\n        \"type\": [\n          \"number\",\n          \"null\"\n        ]\n      },\n      \"vat_percent\": {\n        \"type\": [\n          \"number\",\n          \"null\"\n        ]\n      },\n      \"vat_amount\": {\n        \"type\": [\n          \"number\",\n          \"null\"\n        ]\n      },\n      \"total\": {\n        \"type\": [\n          \"number\",\n          \"null\"\n        ]\n      },\n      \"delivery_date\": {\n        \"type\": [\n          \"string\",\n          \"null\"\n        ],\n        \"description\": \"Only if an exact calendar date is written. Otherwise null.\"\n      },\n      \"delivery_days_after_po\": {\n        \"type\": [\n          \"number\",\n          \"null\"\n        ],\n        \"description\": \"Only if the quote says 'within N days'. Otherwise null.\"\n      },\n      \"delivery_text\": {\n        \"type\": [\n          \"string\",\n          \"null\"\n        ],\n        \"description\": \"Exact delivery sentence copied word for word, e.g. 'Delivery within 4 weeks of PO.'\"\n      },\n      \"supplier_tin\": {\n        \"type\": [\n          \"string\",\n          \"null\"\n        ]\n      },\n      \"supplier_bin\": {\n        \"type\": [\n          \"string\",\n          \"null\"\n        ]\n      },\n      \"payment_terms_text\": {\n        \"type\": [\n          \"string\",\n          \"null\"\n        ],\n        \"description\": \"Exact payment clause copied word for word\"\n      },\n      \"advance_payment_percentage\": {\n        \"type\": [\n          \"number\",\n          \"null\"\n        ],\n        \"description\": \"Advance % with PO, e.g. 15. Use 0 if 'no advance payment'.\"\n      },\n      \"balance_payment_days\": {\n        \"type\": [\n          \"number\",\n          \"null\"\n        ],\n        \"description\": \"Days after delivery to pay the balance. Null if a range such as '30 to 90 days' or 'as agreed' is written.\"\n      },\n      \"late_delivery_penalty_clause_present\": {\n        \"type\": [\n          \"boolean\",\n          \"null\"\n        ],\n        \"description\": \"true if a late delivery penalty clause exists, false if there is none\"\n      },\n      \"late_delivery_penalty_text\": {\n        \"type\": [\n          \"string\",\n          \"null\"\n        ],\n        \"description\": \"Exact penalty clause copied word for word, null if none\"\n      },\n      \"late_delivery_penalty_percent_per_week\": {\n        \"type\": [\n          \"number\",\n          \"null\"\n        ],\n        \"description\": \"Penalty percent of order value per week, e.g. 0.5\"\n      },\n      \"validity_days\": {\n        \"type\": [\n          \"number\",\n          \"null\"\n        ],\n        \"description\": \"Number of days the quotation is valid for from the date\"\n      }\n    }\n  }\n",
+        "options": {
+          "systemPromptTemplate": "Extract data from the supplier quotation text. Copy values exactly as written.\\nRemove thousand separators from numbers (5,664,000.00 -> 5664000).\\nFor every *_text field, copy the exact sentence(s) from the document word for word.\\nIf a value or clause is not clearly stated in the text, return null. Never guess or calculate.\\nIf the quotation says no advance is needed, advance_payment_percentage is 0.\\nIf the quotation has no late delivery clause at all, late_delivery_penalty_text and late_delivery_penalty_percent_per_week must be null and late_delivery_penalty_clause_present must be false.\\nIf there is no separate VAT line, vat_percent and vat_amount must be null.\\nIf TIN or BIN number is not written (for example 'details available on request'), return null for it."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        16
+      ],
+      "id": "08fdbdc5-d339-4384-b3c6-9f5a088bcf4a",
+      "name": "Information Extractor"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        520,
+        248
+      ],
+      "id": "ca80791b-787d-44d2-a1cf-215dba74c61e",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json.output || $input.first().json;\nconst issues = [];\n\n// 1. Validate line items\nfor (const it of d.items ?? []) {\n  if (it.quantity == null || it.unit_price == null || it.amount == null) {\n    issues.push(`Missing value for item ${it.item_code}`);\n  } else if (Math.abs(it.quantity * it.unit_price - it.amount) > 0.01) {\n    issues.push(`Amount mismatch for item ${it.item_code}`);\n  }\n}\n\n// 2. Validate financial totals and math\nconst sum = (d.items ?? []).reduce((s, i) => s + (i.amount ?? 0), 0);\nif (d.subtotal != null && Math.abs(sum - d.subtotal) > 0.01) issues.push(\"Subtotal mismatch\");\nif (d.vat_percent != null && d.subtotal != null && Math.abs(d.subtotal * d.vat_percent / 100 - d.vat_amount) > 0.01) issues.push(\"VAT amount mismatch\");\nif (d.subtotal != null && d.vat_amount != null && d.total != null && Math.abs(d.subtotal + d.vat_amount - d.total) > 0.01) issues.push(\"Total mismatch\");\n\n// 3. Validate required general fields\nfor (const f of [\"supplier_name\", \"reference_pr\", \"total\"]) {\n  if (d[f] == null) issues.push(`Missing field: ${f}`);\n}\n\n// 4. Validate delivery information\nif (d.delivery_date == null && d.delivery_days_after_po == null) {\n  issues.push(\"No delivery information\");\n}\n\n// 5. Validate mandatory contract/supplier terms\nif (d.supplier_tin == null || d.supplier_bin == null) {\n  issues.push(\"Missing supplier TIN or BIN\");\n}\n\nif (d.advance_payment_percentage == null) {\n  issues.push(\"Missing advance payment terms\");\n}\n\nif (d.validity_days == null) {\n  issues.push(\"Missing quotation validity period\");\n}\n\nreturn [{ json: { ...d, extraction_issues: issues } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        16
+      ],
+      "id": "79c9e4ac-66bc-4da9-85b2-bccb48215161",
+      "name": "extract data from supplier pack"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// =====================================================================\n// n8n Code node: \"supplier vs company\"   (Mode: Run Once for Each Item)\n// Aamar Garments Ltd - supplier document rules\n// Deterministic: no guessing. Anything unclear -> \"Needs a person to check\".\n// =====================================================================\n\n// ---------- 1. Company data ----------\nconst PURCHASE_REQUESTS = {\n  A: { pr: \"PR-2026-114\", desc: \"Cotton twill fabric, 280 gsm\", unit: \"metre\", qty: 12000, max: 480.0 },\n  B: { pr: \"PR-2026-114\", desc: \"Metal zipper, 18 cm\",          unit: \"piece\", qty: 20000, max: 38.0 },\n  C: { pr: \"PR-2026-114\", desc: \"Polyester sewing thread, cone\", unit: \"cone\",  qty: 800,   max: 210.0 },\n  D: { pr: \"PR-2026-114\", desc: \"Poly bag, 30 x 40 cm\",         unit: \"piece\", qty: 50000, max: 6.5 },\n  E: { pr: \"PR-2026-114\", desc: \"Carton box, 5-ply\",            unit: \"piece\", qty: 3000,  max: 95.0 },\n};\n\n// ---------- 2. Company rules (change numbers here only) ----------\nconst RULES = {\n  priceRejectPct: 3,      // reject if unit price > max + 3%\n  maxAdvancePct: 20,      // reject if advance > 20%\n  maxDeliveryDays: 45,    // reject if delivery > 45 days\n  checkDeliveryFrom: 31,  // 31..45 days -> person checks\n  minPayDays: 30,         // balance payment window (days after delivery)\n  maxPayDays: 60,\n  qtyTolerancePct: 5,     // quantity difference above this -> person checks\n  minValidityDays: 30,    // validity below this -> person checks\n  minPenaltyPctPerWeek: 0.5,\n  vatPct: 15,\n  moneyTolerance: 0.011,  // rounding tolerance for arithmetic checks\n};\n\n// ---------- 3. Read input safely ----------\nconst input = $input.item.json;\nconst q = (input.quote && (input.quote.output || input.quote)) || input.output || input;\n\nconst num = (v) => (v === null || v === undefined || v === \"\" || isNaN(Number(v))) ? null : Number(v);\nconst txt = (v) => (typeof v === \"string\" && v.trim() !== \"\") ? v.trim() : null;\nconst fmt = (n) => Number(n).toLocaleString(\"en-US\", { maximumFractionDigits: 4 });\nconst close = (a, b) => Math.abs(a - b) <= RULES.moneyTolerance;\n\nconst rejectReasons = [];\nconst checkReasons = [];\nconst addReject = (rule, detail, evidence) =>\n  rejectReasons.push(`[Reject rule ${rule}] ${detail}` + (evidence ? ` Text: \"${evidence}\"` : \"\"));\nconst addCheck = (rule, detail, evidence) =>\n  checkReasons.push(`[Check rule ${rule}] ${detail}` + (evidence ? ` Text: \"${evidence}\"` : \"\"));\n\nconst supplierName = txt(q.supplier_name) || \"Unknown Supplier\";\nconst items = Array.isArray(q.items) ? q.items : [];\n\n// ---------- 4. Line items: match to purchase request, price, quantity, line math ----------\nlet firstCode = null, firstPrice = null, firstMax = null;\nlet itemAmountSum = 0, itemAmountsKnown = true;\nlet matchedPR = null;\n\nif (items.length === 0) {\n  addCheck(\"-\", \"No line items could be read from the quotation.\");\n  itemAmountsKnown = false;\n}\n\nfor (const it of items) {\n  let code = (txt(it.item_code) || \"\").toUpperCase();\n  let pr = PURCHASE_REQUESTS[code];\n  if (!pr) { // fallback: match by description\n    const d = (txt(it.description) || \"\").toLowerCase();\n    const hit = Object.entries(PURCHASE_REQUESTS).find(([, p]) => d && d.includes(p.desc.toLowerCase()));\n    if (hit) { code = hit[0]; pr = hit[1]; }\n  }\n  if (!pr) {\n    addCheck(\"-\", `Item '${code || it.description || \"?\"}' could not be matched with the purchase request.`);\n    itemAmountsKnown = false;\n    continue;\n  }\n  matchedPR = pr;\n  const price = num(it.unit_price), qty = num(it.quantity), amount = num(it.amount);\n  if (firstCode === null) { firstCode = code; firstPrice = price; firstMax = pr.max; }\n\n  if (price === null) {\n    addCheck(\"-\", `Item ${code}: unit price not readable.`);\n  } else {\n    const pctAbove = (price - pr.max) / pr.max * 100;\n    if (pctAbove > RULES.priceRejectPct + 1e-9) {\n      addReject(1, `Item ${code}: unit price ${fmt(price)} is ${pctAbove.toFixed(2)}% above the maximum ${fmt(pr.max)} (limit is ${RULES.priceRejectPct}%).`);\n    } else if (price > pr.max + 1e-9) {\n      addCheck(1, `Item ${code}: unit price ${fmt(price)} is ${pctAbove.toFixed(2)}% above the maximum ${fmt(pr.max)} (within ${RULES.priceRejectPct}%).`);\n    }\n  }\n\n  if (qty === null) {\n    addCheck(\"-\", `Item ${code}: quantity not readable.`);\n  } else {\n    const diffPct = Math.abs(qty - pr.qty) / pr.qty * 100;\n    if (diffPct > RULES.qtyTolerancePct + 1e-9) {\n      addCheck(2, `Item ${code}: quantity ${fmt(qty)} differs from requested ${fmt(pr.qty)} by ${diffPct.toFixed(1)}% (limit ${RULES.qtyTolerancePct}%).`);\n    }\n  }\n\n  if (qty === null || price === null || amount === null) {\n    addCheck(6, `Item ${code}: quantity, unit price or amount missing, so the line total cannot be verified.`);\n    itemAmountsKnown = false;\n  } else {\n    if (!close(qty * price, amount)) {\n      addCheck(6, `Item ${code}: ${fmt(qty)} x ${fmt(price)} = ${fmt(qty * price)}, but the quotation shows ${fmt(amount)}.`);\n    }\n    itemAmountSum += amount;\n  }\n}\n\n// purchase request reference\nconst refPr = txt(q.reference_pr);\nif (matchedPR && refPr && refPr.toUpperCase() !== matchedPR.pr.toUpperCase()) {\n  addCheck(\"-\", `Quotation refers to ${refPr} but the matched purchase request is ${matchedPR.pr}.`);\n}\n\n// ---------- 5. Totals, VAT ----------\nconst subtotal = num(q.subtotal), vatPct = num(q.vat_percent), vatAmt = num(q.vat_amount), total = num(q.total);\n\nif (vatPct === null || vatAmt === null) {\n  addCheck(5, \"VAT is not shown separately at 15%.\");\n} else if (vatPct !== RULES.vatPct) {\n  addCheck(5, `VAT is shown as ${vatPct}%, not ${RULES.vatPct}%.`);\n}\n\nif (subtotal === null) {\n  addCheck(6, \"Subtotal is missing, so totals cannot be verified.\");\n} else {\n  if (itemAmountsKnown && items.length > 0 && !close(itemAmountSum, subtotal)) {\n    addCheck(6, `Sum of line amounts ${fmt(itemAmountSum)} does not match subtotal ${fmt(subtotal)}.`);\n  }\n  if (vatAmt !== null && !close(subtotal * RULES.vatPct / 100, vatAmt)) {\n    addCheck(6, `15% of subtotal ${fmt(subtotal)} is ${fmt(subtotal * 0.15)}, but VAT shown is ${fmt(vatAmt)}.`);\n  }\n  if (vatAmt !== null && total !== null && !close(subtotal + vatAmt, total)) {\n    addCheck(6, `Subtotal + VAT = ${fmt(subtotal + vatAmt)}, but total shown is ${fmt(total)}.`);\n  }\n}\n\n// ---------- 6. Payment terms ----------\nconst payText = txt(q.payment_terms_text);\nconst payLower = (payText || \"\").toLowerCase();\n\nlet advance = num(q.advance_payment_percentage);\nif (advance === null && /\\b(no|nil|without)\\b[^.]*\\badvance/.test(payLower)) advance = 0;\nif (advance === null) {\n  addCheck(3, \"Advance payment is not stated.\", payText);\n} else if (advance > RULES.maxAdvancePct) {\n  addReject(2, `Advance payment ${advance}% is above the ${RULES.maxAdvancePct}% limit.`, payText);\n}\n\nconst rangeMatch = /(\\d+)\\s*(?:to|-|–)\\s*(\\d+)\\s*days/i.test(payText || \"\");\nconst vague = /as\\s+(?:mutually\\s+)?agreed|negotiable|to be agreed|subject to/i.test(payText || \"\");\nlet balanceDays = num(q.balance_payment_days);\nif (balanceDays === null && payText) {\n  const all = [...payText.matchAll(/(?:within|in)\\s*(\\d+)\\s*days/gi)];\n  if (all.length) balanceDays = Number(all[all.length - 1][1]);\n}\nif (rangeMatch || vague) {\n  addCheck(3, \"Payment terms are unclear (a range or 'as agreed' is given instead of a fixed period).\", payText);\n} else if (balanceDays === null) {\n  addCheck(3, \"Payment days after delivery are not stated.\", payText);\n} else if (balanceDays < RULES.minPayDays || balanceDays > RULES.maxPayDays) {\n  addCheck(3, `Payment ${balanceDays} days after delivery is outside ${RULES.minPayDays} to ${RULES.maxPayDays} days.`, payText);\n}\n\n// ---------- 7. Delivery ----------\nconst delText = txt(q.delivery_text);\nlet delDays = num(q.delivery_days_after_po);\nif (delDays === null && delText) {\n  const w = delText.match(/(\\d+(?:\\.\\d+)?)\\s*weeks?/i);\n  const d = delText.match(/(\\d+(?:\\.\\d+)?)\\s*days?/i);\n  if (d) delDays = Number(d[1]);\n  else if (w) delDays = Number(w[1]) * 7;\n}\nif (delDays === null) {\n  addCheck(\"-\", \"Delivery time after the purchase order is not clearly stated.\", delText);\n} else if (delDays > RULES.maxDeliveryDays) {\n  addReject(5, `Delivery in ${delDays} days is later than ${RULES.maxDeliveryDays} days after the PO.`, delText);\n} else if (delDays >= RULES.checkDeliveryFrom) {\n  addCheck(4, `Delivery in ${delDays} days is in the ${RULES.checkDeliveryFrom} to ${RULES.maxDeliveryDays} day range.`, delText);\n}\n\n// ---------- 8. Late-delivery penalty ----------\nconst penText = txt(q.late_delivery_penalty_text);\nlet penPct = num(q.late_delivery_penalty_percent_per_week);\nconst penPresent = (penText !== null || penPct !== null) && q.late_delivery_penalty_clause_present !== false;\nif (!penPresent) {\n  addReject(3, \"The contract has no late-delivery penalty clause.\");\n} else {\n  if (penPct === null && penText) {\n    const m = penText.match(/(\\d+(?:\\.\\d+)?)\\s*%/);\n    if (m) penPct = Number(m[1]);\n  }\n  if (penPct === null) {\n    addCheck(\"-\", \"Late-delivery penalty percentage could not be read.\", penText);\n  } else if (penText && !/week/i.test(penText)) {\n    addCheck(\"-\", \"Late-delivery penalty is not stated per week.\", penText);\n  } else if (penPct < RULES.minPenaltyPctPerWeek) {\n    addCheck(\"-\", `Late-delivery penalty ${penPct}% per week is below the required ${RULES.minPenaltyPctPerWeek}%.`, penText);\n  }\n}\n\n// ---------- 9. TIN / BIN ----------\nconst tin = txt(q.supplier_tin), bin = txt(q.supplier_bin);\nif (!tin || !bin) {\n  addReject(4, `Supplier ${[!tin ? \"TIN\" : null, !bin ? \"BIN\" : null].filter(Boolean).join(\" and \")} is missing.`);\n}\n\n// ---------- 10. Validity ----------\nconst validity = num(q.validity_days);\nif (validity === null) {\n  addCheck(7, \"Quotation validity period is not stated.\");\n} else if (validity < RULES.minValidityDays) {\n  addCheck(7, `Quotation is valid for ${validity} days, less than ${RULES.minValidityDays}.`);\n}\n\n// ---------- 11. Final decision ----------\nlet status = \"Approve\";\nif (rejectReasons.length > 0) status = \"Reject\";\nelse if (checkReasons.length > 0) status = \"Needs a person to check\";\n\nconst reasons = [...rejectReasons, ...checkReasons];\nif (reasons.length === 0) reasons.push(\"None of the reject or check rules applies.\");\n\nreturn {\n  json: {\n    quotation_no: txt(q.quotation_no),\n    supplier_name: supplierName,\n    item: firstCode,\n    unit_price: firstPrice,\n    max_allowed_price: firstMax,\n    status,\n    reasons,\n    reject_reasons: rejectReasons,\n    check_reasons: checkReasons,\n  },\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        16
+      ],
+      "id": "22f15ad7-3dcb-4ddc-a85d-ef0cb8f72150",
+      "name": "supplier vs company"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "Approve",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "223890c2-db04-4e2a-b56d-572742127600"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Approve"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "id": "a8d44be8-1900-4ad1-b84c-d8a1a801c368",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "Reject",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Reject"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "id": "55ebe74d-d2a0-4dfc-94d8-6615f3e8c51e",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "Needs a person to check",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Needs Review"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.5,
+      "position": [
+        1248,
+        0
+      ],
+      "id": "ac24a1fd-895c-4429-bd00-b56d9f8e7e70",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "formTitle": "file",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "supplier file",
+              "fieldType": "file"
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        16
+      ],
+      "id": "18f86da4-7d51-4a14-aea9-549333ae911f",
+      "name": "supplier pack file",
+      "webhookId": "de281d23-f1ec-4257-aeaa-05827278ca2e"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "844e82fe-7f5b-4b8d-9937-e6116c4b5309",
+              "name": "status",
+              "value": "={{ $json.status }}",
+              "type": "string"
+            },
+            {
+              "id": "4f63acf8-edbb-4f70-b2b5-824ef9298c4b",
+              "name": "supplier_name",
+              "value": "={{ $json.supplier_name }}",
+              "type": "string"
+            },
+            {
+              "id": "981279b0-aa06-4e78-83dd-24a96ce2c120",
+              "name": "reasons[0]",
+              "value": "={{ $json.reasons.join(\"\\n\") }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1472,
+        16
+      ],
+      "id": "53c55bbb-14d6-40ab-a95d-6de96e12fc8f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "={{ $json.status }} - {{ $json.supplier_name }}",
+        "completionMessage": "={{ $json.reasons[0] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        1696,
+        16
+      ],
+      "id": "5aeb0d41-8ca6-4249-8dde-2e6d26fd7111",
+      "name": "Form",
+      "webhookId": "73035111-3a81-4232-8274-dfd9f53c00de"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "extract data from supplier pack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "extract data from supplier pack": {
+      "main": [
+        [
+          {
+            "node": "supplier vs company",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "supplier vs company": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "supplier pack file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1ccc8e8d-3b67-42f8-9d5d-16e4a3be2ec1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "aea143d47d60fbe71e4b885bf1581633dce4d0943ec931f4c0a65602bce19030"
+  },
+  "nodeGroups": [],
+  "id": "yL62IIqP1Qy36RJj",
+  "tags": []
+}
