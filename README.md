@@ -67,6 +67,8 @@ The late-delivery penalty must be at least 0.5% of order value per week of delay
 5. Upload one supplier PDF and submit. The result screen shows the status, the supplier name and all the reasons.
 6. To share a link, activate the workflow and use the Form Trigger's **Production URL**. It works for other people only if your n8n is reachable from the internet. On a local n8n it needs a tunnel such as ngrok.
 
+*Production URL*: https://mahibninao.app.n8n.cloud/form/de281d23-f1ec-4257-aeaa-05827278ca2e
+
 
 ## Expected results for the 10 sample packs
 
