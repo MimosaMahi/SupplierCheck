@@ -49,6 +49,8 @@ The late-delivery penalty must be at least 0.5% of order value per week of delay
 | `purchase-request.csv` | The company's purchase request (maximum prices and quantities) |
 | `company-rules.md` | The company rules |
 | `supplier-pack-01.pdf` to `supplier-pack-10.pdf` | The 10 sample quotes |
+| `SupplierCheck Workflow.png` | The n8n workflow image |
+
 
 ## How to run
 
