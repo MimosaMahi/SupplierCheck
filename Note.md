@@ -3,6 +3,8 @@
 **What I built**
 SupplierCheck is an n8n workflow that checks a supplier quote against the company's purchase request and rules. It runs as fixed steps, one after another: upload form, PDF text extraction, an AI extractor that reads the fields (supplier, items, quantities, prices, delivery, payment, penalty, TIN/BIN, validity), data checks, a match with the purchase request, then a rule engine written in plain JavaScript. A Switch sorts the result into **Approve**, **Reject** or **Needs a person to check**, and a final screen shows the status and every reason with the quoted text. The AI only reads the document. All decisions come from code, so the same input always gives the same answer, and anything missing or unclear goes to a person instead of being guessed.
 
+*Production URL*: https://mahibninao.app.n8n.cloud/form/de281d23-f1ec-4257-aeaa-05827278ca2e
+
 **How I tested it**
 - I worked out the correct decision for each of the 10 sample packs by hand, using the company rules.
 - I ran the rule engine on the expected extracted values for all 10 packs with a test script. All 10 decisions matched.
